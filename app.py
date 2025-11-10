@@ -131,7 +131,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.P(
-                    "Monitor soil moisture and temperature",
+                    "Monitor soil moisture and temperature - Test CI/CD",
                     style={"textAlign": "center", "color": "#555", "marginBottom": "40px"},
                 ),
             ]
