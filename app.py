@@ -4,17 +4,57 @@ from dash.dependencies import Input, Output
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.colors as pc
+import json
+import threading
+import time
+from azure.eventhub import EventHubConsumerClient
 
 
-data = {
-    "Name": ["Location 1", "Location 2", "Location 3", "Location 4", "Location 5"],
-    "Latitude": [40.0, 40.0, 40.1, 40.1, 40.3],
-    "Longitude": [-3.5, -3.55, -3.6, -3.5, -4.2],
-    "Moisture": [40, 30, 20, 45, 25],
-    "Temperature": [23, 21, 25, 24, 22],
-    "Group": ["Farmer A", "Farmer A", "Farmer B", "Farmer B", "Farmer C"]
-}
-df = pd.DataFrame(data)
+connection_str = "Endpoint=sb://iothub-ns-iothubprac-56202220-ab42a5a92a.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=sWfjOIs20elIfMEfuGHWgw7HbRXSkjYKwAIoTF8lKAw=;EntityPath=iothubpracticaissequipo1"
+consumer_group = "webapp"
+
+
+
+df = pd.DataFrame({
+    "Name": ["Location 1", "Location 2"],
+    "Latitude": [40.0, 40.0],
+    "Longitude": [-3.5, -3.55],
+    "ID": [1, 2],
+    "Temperature": [None, None],
+    "Moisture": [None, None],
+    "Timestamp": [None, None],
+    "Riego": [None, None],
+    "Group": ["Farmer A", "Farmer B"]
+}).set_index("ID")
+
+df_lock = threading.Lock()
+
+
+
+def on_event(partition_context, event):
+    global df
+    try:
+        data_str = event.body_as_str()
+        print(data_str)
+        data = json.loads(data_str)
+        dev_id = int(data.get("ID"))
+        with df_lock:
+            df.loc[dev_id, "Temperature"] = data.get("Temperature")
+            df.loc[dev_id, "Moisture"] = data.get("Humidity")
+            df.loc[dev_id, "Timestamp"] = data.get("Timestamp")
+            print(df, "\n")
+        partition_context.update_checkpoint(event)
+    except Exception as e:
+        print(e)
+
+
+def start_receiver():
+    client = EventHubConsumerClient.from_connection_string(connection_str, consumer_group)
+    with client:
+        client.receive(on_event=on_event, starting_position="@latest")
+
+
+
 
 app = dash.Dash(__name__)
 app.title = "IoT Panel"
@@ -131,7 +171,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.P(
-                    "Monitor soil moisture and temperature - Test CI/CD",
+                    "Monitor soil moisture and temperature",
                     style={"textAlign": "center", "color": "#555", "marginBottom": "40px"},
                 ),
             ]
@@ -211,5 +251,7 @@ def update_map(selected_group):
 
 
 if __name__ == "__main__":
+    receiver_thread = threading.Thread(target=start_receiver, daemon=True)
+    receiver_thread.start()
     app.run(debug=True)
 
