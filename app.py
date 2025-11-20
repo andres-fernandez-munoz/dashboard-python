@@ -20,10 +20,10 @@ df = pd.DataFrame({
     "Latitude": [40.0, 40.0],
     "Longitude": [-3.5, -3.55],
     "ID": [1, 2],
-    "Temperature": [None, None],
-    "Moisture": [None, None],
-    "Timestamp": [None, None],
-    "Riego": [None, None],
+    "Temperature": [21.1, 18.2],
+    "Moisture": [40, 30],
+    "Timestamp": [0, 0],
+    "Riego": [0, 0],
     "Group": ["Farmer A", "Farmer B"]
 }).set_index("ID")
 
