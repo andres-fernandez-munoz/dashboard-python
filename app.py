@@ -14,23 +14,6 @@ connection_str = "Endpoint=sb://iothub-ns-iothubprac-56202220-ab42a5a92a.service
 consumer_group = "webapp"
 
 
-
-df = pd.DataFrame({
-    "Name": ["Location 1", "Location 2"],
-    "Latitude": [40.0, 40.0],
-    "Longitude": [-3.5, -3.55],
-    "ID": [1, 2],
-    "Temperature": [21.1, 18.2],
-    "Moisture": [40, 30],
-    "Timestamp": [0, 0],
-    "Riego": [0, 0],
-    "Group": ["Farmer A", "Farmer B"]
-}).set_index("ID")
-
-df_lock = threading.Lock()
-
-
-
 def on_event(partition_context, event):
     global df
     try:
@@ -235,6 +218,26 @@ app.layout = html.Div(
         ),
     ],
 )
+
+
+
+df = pd.DataFrame({
+    "Name": ["Location 1", "Location 2"],
+    "Latitude": [40.0, 40.0],
+    "Longitude": [-3.5, -3.55],
+    "ID": [1, 2],
+    "Temperature": [21.1, 18.2],
+    "Moisture": [40, 30],
+    "Timestamp": [0, 0],
+    "Riego": [0, 0],
+    "Group": ["Farmer A", "Farmer B"]
+}).set_index("ID")
+
+df_lock = threading.Lock()
+
+
+
+
 
 
 
